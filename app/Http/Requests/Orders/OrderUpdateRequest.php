@@ -4,7 +4,7 @@ namespace App\Http\Requests\Orders;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class OrderCreateRequest extends FormRequest
+class OrderUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class OrderCreateRequest extends FormRequest
     public function rules():array
     {
         return [
-            'status'  => 'required|boolean',
+            'status'  => 'boolean',
             'name'    => 'min:3|max:255',
             'phone'   => 'digits:12',
             'user_id' => 'integer|exists:users,id',
