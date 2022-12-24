@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -21,4 +22,9 @@ Route::name('api.')
         Route::apiResource('products', ProductController::class);
         Route::apiResource('categories', CategoryController::class);
         Route::apiResource('orders', OrderController::class);
+
+        Route::get('currencies/update-rates', [CurrencyController::class, 'updateRates'])->name(
+            'currencies.update_rates'
+        );
+        Route::get('currencies/read-rate', [CurrencyController::class, 'readRate'])->name('currencies.read_rate');
     });
