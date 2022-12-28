@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\CurrencyService;
+use Carbon\Carbon;
 use GuzzleHttp\Exception\GuzzleException;
 
 class CurrencyController extends Controller
@@ -17,7 +18,7 @@ class CurrencyController extends Controller
      */
     public static function updateRates():void
     {
-        app(CurrencyService::class)->updateCurrencies(\Carbon\Carbon::tomorrow());
+        app(CurrencyService::class)->updateCurrencies(Carbon::tomorrow());
     }
 
     /**
@@ -28,6 +29,6 @@ class CurrencyController extends Controller
      */
     public static function readRate():void
     {
-        app(CurrencyService::class)->getCurrencyRateFromDB(\Carbon\Carbon::now(), 'EUR');
+        app(CurrencyService::class)->getCurrencyRateFromDB(Carbon::now(), 'EUR');
     }
 }
