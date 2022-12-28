@@ -19,15 +19,4 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
-
-    /**
-     * @return float|int
-     */
-    public function getPriceForCount():float|int
-    {
-        if (!is_null($this->pivot)) {
-            return $this->pivot->count * $this->price;
-        }
-        return $this->price;
-    }
 }
