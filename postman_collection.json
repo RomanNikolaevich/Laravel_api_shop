@@ -164,7 +164,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost/api/v1/products",
+							"raw": "http://localhost/api/v1/products?currency=uah",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -173,6 +173,12 @@
 								"api",
 								"v1",
 								"products"
+							],
+							"query": [
+								{
+									"key": "currency",
+									"value": "uah"
+								}
 							]
 						}
 					},
@@ -237,7 +243,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost/api/v1/products/12",
+							"raw": "http://localhost/api/v1/products/12?currency=eur",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -247,6 +253,12 @@
 								"v1",
 								"products",
 								"12"
+							],
+							"query": [
+								{
+									"key": "currency",
+									"value": "eur"
+								}
 							]
 						}
 					},

@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 
 class CurrencyService
 {
@@ -20,6 +22,8 @@ class CurrencyService
     }
 
     /**
+     * Entering exchange rates into our database from an external source
+     *
      * @param Carbon $date
      *
      * @return void
@@ -46,16 +50,19 @@ class CurrencyService
     }
 
     /**
+     * Getting the exchange rate for a specified date from our database
+     *
      * @param Carbon $date
      * @param string $code
      *
      * @return float|bool|int|null
-     * @throws Exception
      */
     public function getCurrencyRateFromDB(Carbon $date, string $code):float|bool|int|null
     {
-        if (!in_array($code, $this->codes, true)) {
-            throw new Exception('Wrong currency code');
+        $code = strtoupper($code);
+
+        if (!empty(cache('rate_'.$code))) {
+            return cache('rate_'.$code);
         }
 
         $currencyCollection = Currency::where('code', $code)
@@ -68,10 +75,49 @@ class CurrencyService
 
         $rate = $currencyCollection['rate'] / $this->ratio;
 
-        return $rate;
+        $secondsToDayEnd = Carbon::tomorrow()->diffInSeconds(Carbon::now());
+
+        return Cache::remember('rate_'.$code, $secondsToDayEnd, function () use ($rate) {
+            return $rate;
+        });
     }
 
     /**
+     * Calculation of the price of goods in the specified currency with rounding to a significant figure
+     *
+     * @param Carbon $date
+     * @param string $code
+     * @param int    $id
+     *
+     * @return float|int
+     * @throws RuntimeException
+     */
+    public function convertPrice(Carbon $date, string $code, int|float $priceInDefaultCurrency):float|int|null
+    {
+        /** @var string $defaultCode */
+        $defaultCode = config('currency.default_code');
+        $code = strtoupper($code);
+
+        if ($code === $defaultCode) {
+            return $priceInDefaultCurrency;
+        }
+
+        if (!in_array($code, $this->codes, true)) {
+            $code = $defaultCode;
+        }
+
+        $rate = $this->getCurrencyRateFromDB($date, $code);
+
+        if (!$rate) {
+            return 0;
+        }
+
+        return $this->numberToSignificant($priceInDefaultCurrency / $rate);
+    }
+
+    /**
+     * This Client is a Guzzle(PHP HTTP client)
+     *
      * @return Client
      */
     private function getClient():Client
@@ -84,6 +130,8 @@ class CurrencyService
     }
 
     /**
+     * Get rates by Api
+     *
      * @param Carbon $date
      *
      * @return array|null
@@ -112,5 +160,26 @@ class CurrencyService
         }
 
         return $rateCurrency;
+    }
+
+    /**
+     * rounding to significant numbers
+     *
+     * @param int|float|null $number
+     * @param int            $precision
+     *
+     * @return float|int|null
+     */
+    private function numberToSignificant(int|float|null $number):float|int|null
+    {
+        if ($number === 0) {
+            return null;
+        }
+
+        $precision = config('currency.precision');
+        $exponent = floor(log10(abs($number)) + 1);
+        $significant = round(($number / (10 ** $exponent)) * (10 ** $precision)) / (10 ** $precision);
+
+        return round($significant * (10 ** $exponent), 2);
     }
 }
